@@ -2,5 +2,17 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - init: npm install && npm run build
-    command: npm run start
+  - init: |
+      touch /tmp/.npm-lock
+      npm install
+      rm /tmp/.npm-lock
+      npx truffle compile
+    command: (touch /tmp/.ganache-lock; npm run ganache; rm /tmp/.ganache-lock)
+    name: ganache
+  - init: sleep 1 && while [ -f /tmp/.npm-lock ]; do sleep 1; done
+    command: npm start
+    name: Web frontend
+  - init: | 
+      sleep 1 && while [ -f /tmp/.ganache-lock ]; do sleep 1; done
+      npm run deploy:contracts
+    name: Contracts deploy 
